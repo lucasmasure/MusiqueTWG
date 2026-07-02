@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Musique TWG - Accueil</title>
+
+  <meta property="og:title" content="Musique TWG">
+  <meta property="og:description" content="Téléchargez et découvrez les musiques de TWG.">
+  <meta property="og:type" content="website">
+  <meta name="theme-color" content="#B4132B">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet">
+
+  <link rel="icon" type="image/png" href="logo.png">
+
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+  <style>
+    /* ─── RESET & BASE ─────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --red:        #E31B3D;
+      --red-dim:    #B4132B;
+      --red-deep:   #5A0812;
+      --amber:      #FF6B35;
+      --bg:         #0A0505;
+      --bg-mid:     #150707;
+      --text:       #EEDCD8;
+      --text-dim:   #8A6A62;
+      --nav-h:      64px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Exo 2', sans-serif;
+      font-weight: 300;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ─── CANVAS ÉGALISEUR ─────────────────────────────────── */
+    #eq-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* ─── FOND DÉGRADÉ ROUGE ───────────────────────────────── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 50% 40%, rgba(180,19,43,0.18) 0%, transparent 70%),
+        radial-gradient(ellipse 30% 25% at 75% 70%, rgba(255,107,53,0.08) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    /* ─── NAVIGATION ───────────────────────────────────────── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: var(--nav-h);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 0 32px;
+      background: rgba(10, 5, 5, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(227, 27, 61, 0.3);
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-right: auto;
+    }
+
+    .logo-img {
+      height: 36px;
+      width: 36px;
+      object-fit: contain;
+      filter: drop-shadow(0 0 6px rgba(227,27,61,0.7));
+    }
+
+    .nav-brand {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: 0.75rem;
+      letter-spacing: 0.18em;
+      color: var(--red);
+      white-space: nowrap;
+    }
+
+    nav a {
+      position: relative;
+      font-family: 'Exo 2', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      text-decoration: none;
+      padding: 6px 14px;
+      transition: color 0.25s;
+    }
+
+    nav a::after {
+      content: '';
+      position: absolute;
+      bottom: -1px; left: 14px; right: 14px;
+      height: 1px;
+      background: var(--red);
+      transform: scaleX(0);
+      transform-origin: center;
+      transition: transform 0.25s;
+    }
+
+    nav a:hover, nav a.active {
+      color: var(--red);
+    }
+    nav a:hover::after, nav a.active::after {
+      transform: scaleX(1);
+    }
+
+    /* ─── CONNEXION (haut droite) ──────────────────────────── */
+    .nav-auth {
+      display: flex;
+      align-items: center;
+      margin-left: 16px;
+      padding-left: 16px;
+      border-left: 1px solid rgba(227,27,61,0.2);
+    }
+
+    .login-trigger {
+      display: inline-flex;
+      padding: 7px 18px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #fff;
+      background: linear-gradient(135deg, var(--red) 0%, var(--red-dim) 100%);
+      border: none;
+      cursor: pointer;
+      white-space: nowrap;
+      clip-path: polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%);
+      transition: filter 0.25s;
+    }
+
+    .login-trigger:hover { filter: brightness(1.2); }
+
+    .user-badge {
+      display: none;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .user-badge .user-pseudo {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.68rem;
+      letter-spacing: 0.05em;
+      color: var(--red);
+      max-width: 140px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .user-badge button {
+      padding: 7px 14px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.6rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--red);
+      background: transparent;
+      border: 1px solid var(--red-dim);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: color 0.25s, border-color 0.25s, background 0.25s;
+    }
+
+    .user-badge button:hover { color: #fff; border-color: var(--red); background: var(--red-dim); }
+
+    .grade-badge {
+      display: none;
+      align-items: center;
+      padding: 3px 10px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.55rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      border-radius: 2px;
+      white-space: nowrap;
+    }
+
+    .grade-badge.grade-admin {
+      color: #FF6B35;
+      background: rgba(255, 107, 53, 0.12);
+      border: 1px solid rgba(255, 107, 53, 0.4);
+    }
+
+    .grade-badge.grade-super-admin {
+      color: #F0B429;
+      background: rgba(240, 180, 41, 0.12);
+      border: 1px solid rgba(240, 180, 41, 0.5);
+    }
+
+    /* ─── MODALE DE CONNEXION ──────────────────────────────── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 300;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: rgba(5, 2, 2, 0.78);
+      backdrop-filter: blur(6px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s;
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .login-modal {
+      position: relative;
+      width: 100%;
+      max-width: 380px;
+      background: linear-gradient(160deg, #150707 0%, #0A0505 100%);
+      border: 1px solid rgba(227,27,61,0.3);
+      padding: 36px 28px 28px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 40px rgba(227,27,61,0.15);
+      transform: translateY(10px);
+      transition: transform 0.25s;
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+
+    .login-modal.wide-modal { max-width: 560px; }
+
+    .modal-overlay.open .login-modal { transform: translateY(0); }
+
+    .modal-close {
+      position: absolute;
+      top: 14px; right: 14px;
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      font-size: 1.5rem;
+      line-height: 1;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+
+    .modal-close:hover { color: var(--red); }
+
+    .modal-title {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: 1.1rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--red);
+      margin-bottom: 6px;
+    }
+
+    .modal-subtitle {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      letter-spacing: 0.03em;
+      margin-bottom: 26px;
+      line-height: 1.6;
+    }
+
+    .modal-form { display: flex; flex-direction: column; gap: 20px; }
+
+    .modal-field label {
+      display: block;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 8px;
+    }
+
+    .modal-field input[type="text"],
+    .modal-field input[type="email"] {
+      width: 100%;
+      padding: 11px 14px;
+      background: rgba(21, 7, 7, 0.6);
+      border: 1px solid rgba(227,27,61,0.3);
+      color: var(--text);
+      font-family: 'Exo 2', sans-serif;
+      font-size: 0.85rem;
+      outline: none;
+    }
+
+    .modal-field input[type="text"]:focus,
+    .modal-field input[type="email"]:focus { border-color: var(--red); }
+    .modal-field input::placeholder { color: var(--text-dim); }
+    .modal-field input:disabled { opacity: 0.6; }
+
+    .modal-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 16px 0 12px;
+      font-size: 0.62rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+
+    .modal-divider::before,
+    .modal-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(227,27,61,0.2);
+    }
+
+    .google-picker { display: flex; justify-content: center; min-height: 44px; }
+
+    .selected-email {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 11px 14px;
+      background: rgba(21, 7, 7, 0.6);
+      border: 1px solid rgba(80, 200, 130, 0.45);
+    }
+
+    .selected-email span {
+      font-size: 0.8rem;
+      color: var(--text);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .selected-email button {
+      background: none;
+      border: none;
+      color: var(--red);
+      font-size: 0.62rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      font-family: 'Orbitron', sans-serif;
+      white-space: nowrap;
+    }
+
+    .modal-submit {
+      margin-top: 4px;
+      padding: 13px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #fff;
+      background: linear-gradient(135deg, var(--red) 0%, var(--red-dim) 100%);
+      border: none;
+      cursor: pointer;
+      transition: filter 0.25s, opacity 0.25s;
+      clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%);
+    }
+
+    .modal-submit:disabled { opacity: 0.35; cursor: not-allowed; }
+    .modal-submit:not(:disabled):hover { filter: brightness(1.15); }
+
+    /* ─── BOUTON STAFF (bas droite) ─────────────────────────── */
+    .staff-fab {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 150;
+      padding: 13px 24px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: #fff;
+      background: linear-gradient(135deg, var(--red-dim) 0%, var(--red-deep) 100%);
+      border: 1px solid rgba(227,27,61,0.5);
+      cursor: pointer;
+      clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.45);
+      transition: filter 0.25s, transform 0.2s;
+    }
+
+    .staff-fab:hover { filter: brightness(1.2); transform: translateY(-2px); }
+
+    .staff-message {
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 0.85rem;
+      line-height: 1.7;
+      margin-bottom: 14px;
+    }
+
+    .staff-message strong { color: var(--red); }
+
+    .staff-admin-panel {
+      margin-top: 24px;
+      padding-top: 22px;
+      border-top: 1px solid rgba(227,27,61,0.2);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .staff-add-form label {
+      display: block;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.6rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 8px;
+    }
+
+    .staff-add-row { display: flex; gap: 8px; }
+
+    .staff-add-row input {
+      flex: 1;
+      padding: 10px 12px;
+      background: rgba(21, 7, 7, 0.6);
+      border: 1px solid rgba(227,27,61,0.3);
+      color: var(--text);
+      font-family: 'Exo 2', sans-serif;
+      font-size: 0.78rem;
+      outline: none;
+    }
+
+    .staff-add-row input:focus { border-color: var(--red); }
+    .staff-add-row input::placeholder { color: var(--text-dim); }
+
+    .staff-add-row button {
+      padding: 10px 18px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.6rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #fff;
+      background: linear-gradient(135deg, var(--red) 0%, var(--red-dim) 100%);
+      border: none;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: filter 0.2s;
+    }
+
+    .staff-add-row button:hover { filter: brightness(1.15); }
+
+    .staff-add-feedback {
+      margin-top: 8px;
+      font-size: 0.72rem;
+      letter-spacing: 0.02em;
+      line-height: 1.5;
+      color: var(--text-dim);
+    }
+
+    .staff-add-feedback.success { color: #7ED9A0; }
+    .staff-add-feedback.error   { color: var(--red); }
+
+    .staff-list-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+
+    .staff-grade-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .staff-grade-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 12px;
+      background: rgba(21, 7, 7, 0.5);
+      border: 1px solid rgba(227,27,61,0.18);
+      flex-wrap: wrap;
+    }
+
+    .staff-grade-email {
+      font-size: 0.72rem;
+      color: var(--text);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 100%;
+    }
+
+    .staff-grade-pseudo {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.62rem;
+      color: var(--text-dim);
+      letter-spacing: 0.03em;
+    }
+
+    .remove-grade-btn {
+      padding: 6px 12px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.58rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--red);
+      background: transparent;
+      border: 1px solid rgba(227,27,61,0.4);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: color 0.2s, border-color 0.2s, background 0.2s;
+    }
+
+    .remove-grade-btn:hover { color: #fff; background: var(--red-dim); border-color: var(--red); }
+
+    @media (max-width: 700px) {
+      .staff-fab { bottom: 16px; right: 16px; padding: 11px 18px; font-size: 0.6rem; }
+    }
+
+    /* ─── CONTENU PRINCIPAL ────────────────────────────────── */
+    .content {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-top: var(--nav-h);
+    }
+
+    /* ─── HERO ─────────────────────────────────────────────── */
+    #hero {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 60px 24px 80px;
+      gap: 0;
+    }
+
+    #hero::before {
+      content: '♪ ♫ ♪';
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.9rem;
+      letter-spacing: 0.4em;
+      color: var(--red-dim);
+      margin-bottom: 32px;
+      opacity: 0.7;
+    }
+
+    .hero-logo {
+      width: 160px;
+      height: 160px;
+      object-fit: contain;
+      margin-bottom: 24px;
+      filter:
+        drop-shadow(0 0 20px rgba(227,27,61,0.6))
+        drop-shadow(0 0 60px rgba(227,27,61,0.25));
+      animation: logoFloat 6s ease-in-out infinite, logoPulse 4s ease-in-out infinite;
+    }
+
+    @keyframes logoFloat {
+      0%, 100% { transform: translateY(0px); }
+      50%       { transform: translateY(-10px); }
+    }
+
+    @keyframes logoPulse {
+      0%, 100% { filter: drop-shadow(0 0 20px rgba(227,27,61,0.6)) drop-shadow(0 0 60px rgba(227,27,61,0.25)); }
+      50%       { filter: drop-shadow(0 0 30px rgba(227,27,61,0.9)) drop-shadow(0 0 80px rgba(227,27,61,0.4)); }
+    }
+
+    .hero-name {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: clamp(2.2rem, 7vw, 4rem);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      background: linear-gradient(160deg, #FFDCC2 0%, #E31B3D 35%, #B4132B 65%, #5A0812 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 28px;
+      filter: drop-shadow(0 4px 24px rgba(227,27,61,0.35));
+    }
+
+    .hero-divider {
+      width: 120px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--red), transparent);
+      margin-bottom: 28px;
+    }
+
+    .hero-slogan {
+      font-family: 'Exo 2', sans-serif;
+      font-weight: 300;
+      font-size: clamp(0.85rem, 2.2vw, 1.05rem);
+      letter-spacing: 0.18em;
+      color: var(--text-dim);
+      margin-bottom: 48px;
+    }
+
+    .hero-slogan em {
+      font-style: italic;
+      color: var(--red);
+      font-weight: 300;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .enter-btn {
+      display: inline-block;
+      position: relative;
+      padding: 14px 40px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      text-decoration: none;
+      color: #fff;
+      background: linear-gradient(135deg, var(--red) 0%, var(--red-dim) 100%);
+      border: none;
+      clip-path: polygon(12px 0%, 100% 0%, calc(100% - 12px) 100%, 0% 100%);
+      transition: filter 0.25s, transform 0.2s;
+    }
+
+    .enter-btn.secondary {
+      background: transparent;
+      border: 1px solid var(--red-dim);
+      color: var(--red);
+      clip-path: none;
+    }
+
+    .enter-btn:hover {
+      filter: brightness(1.2);
+      transform: translateY(-2px);
+    }
+
+    /* ─── FOOTER ───────────────────────────────────────────── */
+    footer {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      padding: 28px 24px;
+      border-top: 1px solid rgba(227,27,61,0.15);
+      text-align: center;
+    }
+
+    .logo-small {
+      height: 28px;
+      width: 28px;
+      object-fit: contain;
+      opacity: 0.5;
+      filter: drop-shadow(0 0 4px rgba(227,27,61,0.4));
+    }
+
+    footer p {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.58rem;
+      letter-spacing: 0.25em;
+      color: var(--text-dim);
+      opacity: 0.6;
+    }
+
+    /* ─── RESPONSIVE ───────────────────────────────────────── */
+    @media (max-width: 700px) {
+      nav { padding: 0 12px; gap: 2px; }
+      .nav-brand { display: none; }
+      nav a { padding: 6px 8px; font-size: 0.65rem; }
+      .nav-auth { margin-left: 8px; padding-left: 8px; }
+      .user-badge .user-pseudo { max-width: 90px; }
+    }
+
+    /* ─── REDUCED MOTION ───────────────────────────────────── */
+    @media (prefers-reduced-motion: reduce) {
+      .hero-logo { animation: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="eq-canvas"></canvas>
+
+  <nav>
+    <div class="nav-logo">
+      <img src="logo.png" alt="Logo Musique TWG" class="logo-img">
+      <span class="nav-brand">MUSIQUE TWG</span>
+    </div>
+    <a href="index.html" class="active">Accueil</a>
+    <a href="telechargement-musique.html">Téléchargement musique</a>
+    <a href="liste-musiques.html">Liste des musiques</a>
+    <a href="liste-musiques-globales.html">Musiques globales</a>
+
+    <div class="nav-auth">
+      <button type="button" id="open-login-btn" class="login-trigger">Se connecter</button>
+      <div id="user-badge" class="user-badge">
+        <span class="user-pseudo" id="user-pseudo-display"></span>
+        <span class="grade-badge" id="user-grade-display" style="display:none;"></span>
+        <button type="button" id="logout-btn">Déconnexion</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ─── MODALE DE CONNEXION ────────────────────────────────── -->
+  <div class="modal-overlay" id="login-overlay">
+    <div class="login-modal">
+      <button type="button" class="modal-close" id="modal-close-btn" aria-label="Fermer">&times;</button>
+      <h2 class="modal-title">Connexion</h2>
+      <p class="modal-subtitle">Choisissez un pseudo et indiquez votre adresse email pour accéder au site.</p>
+
+      <form id="login-form" class="modal-form">
+        <div class="modal-field">
+          <label for="login-pseudo">Pseudo</label>
+          <input type="text" id="login-pseudo" placeholder="Votre pseudo" maxlength="24" autocomplete="off">
+        </div>
+
+        <div class="modal-field">
+          <label for="login-email">Adresse email</label>
+          <input type="email" id="login-email" placeholder="vous@exemple.com" autocomplete="email" list="known-emails-list">
+          <datalist id="known-emails-list"></datalist>
+          <div class="selected-email" id="selected-email-display">
+            <span id="selected-email-text"></span>
+            <button type="button" id="change-email-btn">Changer</button>
+          </div>
+        </div>
+
+        <div class="modal-field" id="google-field" style="display:none;">
+          <div class="modal-divider"><span>ou</span></div>
+          <div class="google-picker" id="google-btn"></div>
+        </div>
+
+        <button type="submit" class="modal-submit" id="modal-submit-btn" disabled>Confirmer la connexion</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="content">
+    <section id="hero">
+
+      <img src="logo.png" alt="Logo Musique TWG" class="hero-logo">
+
+      <h1 class="hero-name">Musique TWG</h1>
+
+      <div class="hero-divider"></div>
+
+      <div class="hero-slogan">
+        Le son &middot; le rythme &middot; <em>la passion</em>
+      </div>
+
+      <div class="btn-row">
+        <a href="telechargement-musique.html" class="enter-btn">Télécharger</a>
+        <a href="liste-musiques.html" class="enter-btn secondary">Voir la liste</a>
+      </div>
+
+    </section>
+  </div>
+
+  <footer>
+    <img src="logo.png" alt="Logo Musique TWG Petit" class="logo-small">
+    <p>MUSIQUE TWG &mdash; TOUS DROITS RÉSERVÉS</p>
+  </footer>
+
+  <button type="button" class="staff-fab" id="staff-fab" style="display:none;">Staff</button>
+
+  <div class="modal-overlay" id="staff-overlay">
+    <div class="login-modal wide-modal">
+      <button type="button" class="modal-close" id="staff-close-btn" aria-label="Fermer">&times;</button>
+      <h2 class="modal-title">Staff</h2>
+      <div id="staff-content"></div>
+    </div>
+  </div>
+
+  <script src="auth.js"></script>
+  <script src="roles.js"></script>
+  <script>
+    // ── Fenêtre Staff (accès réservé admin / super-admin) ────
+    (function () {
+      function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+      }
+
+      function renderStaffContent() {
+        const content = document.getElementById('staff-content');
+        if (!content) return;
+
+        const loggedIn = window.TWGAuth && window.TWGAuth.isLoggedIn && window.TWGAuth.isLoggedIn();
+
+        if (!loggedIn) {
+          content.innerHTML = '<p class="staff-message">Vous devez être connecté pour accéder à cet espace.</p>';
+          return;
+        }
+
+        const grade   = window.TWGRoles ? window.TWGRoles.getCurrentGrade() : null;
+        const allowed = window.TWGRoles ? window.TWGRoles.isStaff() : false;
+
+        if (!allowed) {
+          content.innerHTML = '<p class="staff-message">Accès réservé au staff (grade <strong>admin</strong> ou <strong>super-admin</strong>). Votre compte n\'a pas ce grade.</p>';
+          return;
+        }
+
+        const pseudo = window.TWGAuth.getPseudo() || '';
+        content.innerHTML =
+          '<p class="staff-message">Bienvenue, <strong>' + escapeHtml(pseudo) + '</strong>. Grade : <strong>' + escapeHtml(grade) + '</strong>.</p>' +
+          '<p class="staff-message">Aucune autre fonctionnalité n\'est encore définie pour cet espace.</p>';
+
+        if (grade === 'super-admin') {
+          content.appendChild(buildGradeManagementPanel());
+          renderGradeList(true);
+        } else if (grade === 'admin') {
+          content.appendChild(buildGradeViewOnlyPanel());
+          renderGradeList(false);
+        }
+      }
+
+      function buildGradeViewOnlyPanel() {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'staff-admin-panel';
+
+        const listTitle = document.createElement('h3');
+        listTitle.className = 'staff-list-title';
+        listTitle.textContent = 'Comptes ayant un grade';
+
+        const list = document.createElement('div');
+        list.className = 'staff-grade-list';
+        list.id = 'staff-grade-list';
+
+        wrapper.appendChild(listTitle);
+        wrapper.appendChild(list);
+
+        return wrapper;
+      }
+
+      function buildGradeManagementPanel() {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'staff-admin-panel';
+
+        ['super-admin', 'admin'].forEach(function (gradeToAdd) {
+          const form = document.createElement('form');
+          form.className = 'staff-add-form';
+
+          const label = document.createElement('label');
+          label.textContent = 'Ajouter le grade « ' + gradeToAdd + ' » à une adresse email';
+
+          const row = document.createElement('div');
+          row.className = 'staff-add-row';
+
+          const input = document.createElement('input');
+          input.type = 'email';
+          input.placeholder = 'adresse@exemple.com';
+          input.required = true;
+
+          const btn = document.createElement('button');
+          btn.type = 'submit';
+          btn.textContent = 'Ajouter';
+
+          row.appendChild(input);
+          row.appendChild(btn);
+
+          const feedback = document.createElement('p');
+          feedback.className = 'staff-add-feedback';
+
+          form.appendChild(label);
+          form.appendChild(row);
+          form.appendChild(feedback);
+
+          form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const email = input.value.trim();
+            if (!email) return;
+
+            const ok = window.TWGRoles.setGradeForEmail(email, gradeToAdd);
+            const knownPseudo = window.TWGAuth.getPseudoForEmail(email);
+            const pseudoText = knownPseudo
+              ? ('Pseudo associé : « ' + knownPseudo + ' ».')
+              : 'Pseudo inconnu (cette adresse ne s\'est jamais connectée sur cet appareil).';
+
+            if (ok) {
+              feedback.textContent = '« ' + email + ' » a été ajoutée au grade ' + gradeToAdd + '. ' + pseudoText;
+              feedback.className = 'staff-add-feedback success';
+              input.value = '';
+              renderGradeList(true);
+            } else {
+              feedback.textContent = 'Impossible d\'ajouter cette adresse (déjà définie en dur dans le code, ou grade invalide).';
+              feedback.className = 'staff-add-feedback error';
+            }
+          });
+
+          wrapper.appendChild(form);
+        });
+
+        const listTitle = document.createElement('h3');
+        listTitle.className = 'staff-list-title';
+        listTitle.textContent = 'Comptes ayant un grade';
+
+        const list = document.createElement('div');
+        list.className = 'staff-grade-list';
+        list.id = 'staff-grade-list';
+
+        wrapper.appendChild(listTitle);
+        wrapper.appendChild(list);
+
+        return wrapper;
+      }
+
+      function renderGradeList(canManage) {
+        const list = document.getElementById('staff-grade-list');
+        if (!list || !window.TWGRoles) return;
+
+        const all = window.TWGRoles.getAllGrades();
+        const emails = Object.keys(all);
+
+        if (emails.length === 0) {
+          list.innerHTML = '<p class="staff-add-feedback">Aucun compte n\'a de grade pour l\'instant.</p>';
+          return;
+        }
+
+        emails.sort(function (a, b) {
+          if (all[a].grade !== all[b].grade) return all[a].grade === 'super-admin' ? -1 : 1;
+          return a.localeCompare(b);
+        });
+
+        list.innerHTML = '';
+        emails.forEach(function (email) {
+          const info = all[email];
+          const knownPseudo = window.TWGAuth.getPseudoForEmail(email);
+
+          const row = document.createElement('div');
+          row.className = 'staff-grade-row';
+
+          const left = document.createElement('div');
+          left.style.display = 'flex';
+          left.style.flexDirection = 'column';
+          left.style.gap = '2px';
+
+          const emailSpan = document.createElement('span');
+          emailSpan.className = 'staff-grade-email';
+          emailSpan.textContent = email;
+
+          const pseudoSpan = document.createElement('span');
+          pseudoSpan.className = 'staff-grade-pseudo';
+          pseudoSpan.textContent = knownPseudo ? ('Pseudo : ' + knownPseudo) : 'Pseudo inconnu sur cet appareil';
+
+          left.appendChild(emailSpan);
+          left.appendChild(pseudoSpan);
+
+          const gradeSpan = document.createElement('span');
+          gradeSpan.className = 'grade-badge grade-' + info.grade;
+          gradeSpan.style.display = 'inline-flex';
+          gradeSpan.textContent = info.grade + (info.hardcoded ? ' 🔒' : '');
+
+          const right = document.createElement('div');
+          right.style.display = 'flex';
+          right.style.alignItems = 'center';
+          right.style.gap = '10px';
+          right.appendChild(gradeSpan);
+
+          if (canManage && info.hardcoded) {
+            const lockNote = document.createElement('span');
+            lockNote.className = 'staff-grade-pseudo';
+            lockNote.title = 'Ce grade est défini en dur dans le code (roles.js) et ne peut pas être retiré depuis cette fenêtre.';
+            lockNote.textContent = 'Non modifiable';
+            right.appendChild(lockNote);
+          } else if (canManage) {
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.className = 'remove-grade-btn';
+            removeBtn.textContent = 'Retirer';
+            removeBtn.addEventListener('click', function () {
+              const sure = window.confirm('Retirer le grade « ' + info.grade + ' » de « ' + email + ' » ?');
+              if (!sure) return;
+              window.TWGRoles.setGradeForEmail(email, null);
+              renderGradeList(canManage);
+            });
+            right.appendChild(removeBtn);
+          }
+
+          row.appendChild(left);
+          row.appendChild(right);
+          list.appendChild(row);
+        });
+      }
+
+      function openStaffModal() {
+        const overlay = document.getElementById('staff-overlay');
+        if (overlay) overlay.classList.add('open');
+        renderStaffContent();
+      }
+
+      function closeStaffModal() {
+        const overlay = document.getElementById('staff-overlay');
+        if (overlay) overlay.classList.remove('open');
+      }
+
+      document.addEventListener('DOMContentLoaded', function () {
+        const fab      = document.getElementById('staff-fab');
+        const closeBtn = document.getElementById('staff-close-btn');
+        const overlay  = document.getElementById('staff-overlay');
+
+        if (fab) fab.addEventListener('click', openStaffModal);
+        if (closeBtn) closeBtn.addEventListener('click', closeStaffModal);
+        if (overlay) {
+          overlay.addEventListener('click', function (e) {
+            if (e.target === overlay) closeStaffModal();
+          });
+        }
+        document.addEventListener('keydown', function (e) {
+          if (e.key === 'Escape') closeStaffModal();
+        });
+      });
+    })();
+
+    // ── Remplacement du logo par l'image Imgur (silencieux) ──
+    // Essaie plusieurs extensions jusqu'à trouver l'image valide,
+    // puis remplace tous les logos du site sans jamais exposer le lien.
+    (function() {
+      const IMGUR_ID = 'xJBlgGM';
+      const EXTENSIONS = ['.jpg', '.png', '.jpeg', '.gif', '.webp'];
+      let i = 0;
+
+      function tryNext() {
+        if (i >= EXTENSIONS.length) return; // le logo.png d'origine reste affiché
+        const url = `https://i.imgur.com/${IMGUR_ID}${EXTENSIONS[i]}`;
+        i++;
+        const test = new Image();
+        test.onload = () => {
+          document.querySelectorAll('.logo-img, .hero-logo, .logo-small')
+            .forEach(img => { img.src = url; });
+        };
+        test.onerror = tryNext;
+        test.src = url;
+      }
+
+      tryNext();
+    })();
+
+    // ── Barres d'égaliseur animées en fond ──────────────────
+    const canvas = document.getElementById('eq-canvas');
+    const ctx    = canvas.getContext('2d');
+
+    let W, H, bars = [];
+
+    function resize() {
+      W = canvas.width  = window.innerWidth;
+      H = canvas.height = window.innerHeight;
+      initBars();
+    }
+
+    function initBars(n = 48) {
+      bars = Array.from({ length: n }, (_, i) => ({
+        x: (W / n) * i,
+        h: Math.random() * 60 + 10,
+        target: Math.random() * 60 + 10,
+        speed: 0.02 + Math.random() * 0.03,
+        gold: Math.random() < 0.3
+      }));
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+      const barWidth = W / bars.length;
+
+      for (const b of bars) {
+        b.h += (b.target - b.h) * b.speed;
+        if (Math.abs(b.h - b.target) < 1) {
+          b.target = Math.random() * (H * 0.12) + 8;
+        }
+
+        const grad = ctx.createLinearGradient(0, H, 0, H - b.h);
+        grad.addColorStop(0, b.gold ? 'rgba(255,107,53,0.35)' : 'rgba(227,27,61,0.30)');
+        grad.addColorStop(1, 'rgba(227,27,61,0)');
+
+        ctx.fillStyle = grad;
+        ctx.fillRect(b.x, H - b.h, barWidth - 2, b.h);
+      }
+
+      requestAnimationFrame(draw);
+    }
+
+    window.addEventListener('resize', resize);
+    resize();
+    requestAnimationFrame(draw);
+  </script>
+
+</body>
+</html>
